@@ -1,0 +1,53 @@
+# code: language=ansible
+
+- name: Configure UFW with NAT and IP Forwarding
+  vars:
+    # The external interface connected to the Internet
+    outside_interface: "{{ awg_outside_interface | default(ansible_facts['default_ipv4']['interface']) }}"
+    # The internal network range that needs internet access
+    inside_network: "{{ awg_network }}"
+  block:
+    - name: Enable IPv4 forwarding in sysctl
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: true
+        state: present
+        reload: true
+
+    - name: Set UFW default routed policy to ACCEPT
+      community.general.ufw:
+        direction: routed
+        policy: allow
+
+    - name: Configure UFW masquerading block in before.rules
+      ansible.builtin.blockinfile:
+        path: /etc/ufw/before.rules
+        insertbefore: BOF
+        marker: "# {mark} ANSIBLE MANAGED NAT RULES"
+        block: |
+          # NAT table rules
+          *nat
+          :POSTROUTING ACCEPT [0:0]
+
+          # Forward traffic from internal network out to the internet
+          -A POSTROUTING -s {{ inside_network }} -o {{ outside_interface }} -j MASQUERADE
+
+          COMMIT
+
+    - name: Ensure SSH is allowed before enabling UFW (Prevent lockout)
+      loop:
+        - port: '22'
+          proto: tcp
+        - port: '60000:61000'
+          proto: udp
+        - port: "{{ awg_port }}"
+          proto: udp
+      community.general.ufw:
+        rule: allow
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+
+    - name: Enable UFW and reload firewall
+      community.general.ufw:
+        state: enabled

@@ -1,0 +1,15 @@
+#SPDX-License-Identifier: MIT-0
+# handlers file for ansible-role-awg-exit-nodes
+# code: language=ansible
+---
+- name: Reload UFW
+  community.general.ufw:
+    state: reloaded
+
+- name: Reload AWG
+  ansible.builtin.shell: |
+    set -euo pipefail
+    awg syncconf {{ awg_interface }} <(awg-quick strip {{ awg_remote_directory }}/{{ awg_interface }}.conf)
+  args:
+    executable: /bin/bash
+  changed_when: false

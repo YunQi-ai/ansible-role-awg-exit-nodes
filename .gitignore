@@ -1,0 +1,44 @@
+# --- Ansible Specifics ---
+*.retry
+.ansible/
+/.ansible-logs/
+/facts-*
+
+# --- Extracted/Downloaded Dependencies ---
+# Ignore third-party roles and collections downloaded via ansible-galaxy.
+# (Keep this if you use a requirements.yml file to fetch dependencies dynamically)
+/roles/extracted/
+/collections/
+
+# --- Local Inventory & Ad-hoc Testing ---
+# Ignore local inventory files or test playbooks not meant for production
+hosts
+inventory/local
+test-playbook.yml
+
+# --- Provisioning & Testing Environments ---
+.vagrant/
+.kitchen/
+.molecule/
+.tox/
+.pytest_cache/
+
+# --- Secrets & Local Configurations ---
+# Block temporary vault password files or localized variables
+*.vault_pass
+.env
+.envrc
+local-configure.yml
+
+# --- Python & System Caches ---
+__pycache__/
+*.py[cod]
+.python-version
+.DS_Store
+Thumbs.db
+
+# --- Editor and IDEs ---
+.idea/
+.vscode/
+*.swp
+*~

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT-0
+# tasks file for checking prerequisites for ansible-role-awg-exit-nodes
+# code: language=ansible
+---
+- name: Check required variables
+  ansible.builtin.assert:
+    that:
+      - awg_header_protection_key is defined
+- name: Check supported OS
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution'] == "Ubuntu"
+      - ansible_facts['distribution_version'] is version('20.04', '>')
+- name: Check installation method
+  ansible.builtin.assert:
+    that:
+      - awg_install_method is defined
+      - awg_install_method in ["package"]

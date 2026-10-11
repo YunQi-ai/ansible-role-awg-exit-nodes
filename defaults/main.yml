@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MIT-0
+# code: language=yaml
+---
+awg_install_method: "package"
+
+# defaults file for ansible-role-awg-exit-nodes
+awg_auto_reboot: true
+# MTU setting for the AWG exit nodes
+
+awg_mtu: 1420
+awg_interface: "awg0"
+
+awg_remote_directory: "/etc/amnezia/amneziawg"
+awg_as_spoke: true
+
+awg_network: "10.8.1.0/24"
+awg_port: 44905
+awg_random_trailers: 1
+# awg_header_protection_key:
+
+awg_jc: 4
+awg_jmin: 370
+awg_jmax: 970
+
+awg_s1: 102 # Handshake init padding
+awg_s2: 45 # Handshake response padding
+awg_s3: 27 # Transport padding
+awg_s4: 15 # Transport response padding
+
+awg_h1: 1 # Handshake init header
+awg_h2: 2 # Handshake response header
+awg_h3: 3 # Cookie header
+awg_h4: 4 # Transport header
+
+
+# awg_unmanaged_peers:
+#   vyatta_nubes:
+#     public_key: "Cp2Dz1YuAN9sMqtuABYAClgi7UTWR2HauSNdL8ByA2c="
+#     preshared_key: "openssl rand -base64 32"
+#     allowed_ips: "{{ awg_network | ansible.utils.ipaddr(1) | ansible.utils.ipaddr('address') }}"
+#     persistent_keepalive: "25"
+#     port: 44905
+#     endpoint: "{{ inventory['vyatta'].ansible_host }}"
