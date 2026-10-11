@@ -1,0 +1,128 @@
+# Ansible managed. DO NOT EDIT.
+
+# AmneziaWG configuration for {{ inventory_hostname }}
+
+[Interface]
+Address = {{ awg_addresses | join(', ') }}
+ListenPort = {{ awg_port }}
+PrivateKey = {{ _awg_fact_private_key }}
+{% if awg_dns is defined and awg_dns %}
+DNS = {{ awg_dns }}
+{% endif %}
+{% if awg_mtu is defined and awg_mtu %}
+MTU = {{ awg_mtu }}
+{% endif %}
+{% if awg_fwmark is defined and awg_fwmark %}
+FwMark = {{ awg_fwmark }}
+{% endif %}
+{% if awg_table is defined and awg_table %}
+Table = {{ awg_table }}
+{% endif %}
+{% if awg_jc | int > 0 %}
+Jc = {{ awg_jc }}
+{% endif %}
+{% if awg_jmin | int > 0 %}
+Jmin = {{ awg_jmin }}
+{% endif %}
+{% if awg_jmax | int > 0 %}
+Jmax = {{ awg_jmax }}
+{% endif %}
+{% if awg_s1 | int > 0 %}
+S1 = {{ awg_s1 }}
+{% endif %}
+{% if awg_s2 | int > 0 %}
+S2 = {{ awg_s2 }}
+{% endif %}
+{% if awg_s3 | int > 0 %}
+S3 = {{ awg_s3 }}
+{% endif %}
+{% if awg_s4 | int > 0 %}
+S4 = {{ awg_s4 }}
+{% endif %}
+{% if awg_h1 | int > 0 or (awg_h1 is string and '-' in awg_h1) %}
+H1 = {{ awg_h1 }}
+{% endif %}
+{% if awg_h2 | int > 0 or (awg_h2 is string and '-' in awg_h2) %}
+H2 = {{ awg_h2 }}
+{% endif %}
+{% if awg_h3 | int > 0 or (awg_h3 is string and '-' in awg_h3) %}
+H3 = {{ awg_h3 }}
+{% endif %}
+{% if awg_h4 | int > 0 or (awg_h4 is string and '-' in awg_h4) %}
+H4 = {{ awg_h4 }}
+{% endif %}
+{% if awg_preup is defined and awg_preup %}
+{% for cmd in awg_preup %}
+PreUp = {{ cmd }}
+{% endfor %}
+{% endif %}
+{% if awg_postup is defined and awg_postup %}
+{% for cmd in awg_postup %}
+PostUp = {{ cmd }}
+{% endfor %}
+{% endif %}
+{% if awg_predown is defined and awg_predown %}
+{% for cmd in awg_predown %}
+PreDown = {{ cmd }}
+{% endfor %}
+{% endif %}
+{% if awg_postdown is defined and awg_postdown %}
+{% for cmd in awg_postdown %}
+PostDown = {{ cmd }}
+{% endfor %}
+{% endif %}
+
+RandomTrailers = {{ awg_random_trailers | default(0) }}
+DisableCookies = {{ awg_disable_cookies | default(0) }}
+{% if awg_header_protection_key is defined and awg_header_protection_key %}
+HeaderProtectionKey = {{ awg_header_protection_key }}
+{% endif %}
+
+{% for host in ansible_play_hosts %}
+{# Skip self #}
+{% if host != inventory_hostname %}
+{# In spoke mode, only connect to hosts with endpoints (hubs) #}
+{% if not awg_as_spoke or (hostvars[host].awg_endpoint is defined and hostvars[host].awg_endpoint) %}
+[Peer]
+# {{ host }}
+PublicKey = {{ hostvars[host]._awg_fact_public_key }}
+{% if hostvars[host].awg_preshared_key is defined and hostvars[host].awg_preshared_key %}
+PresharedKey = {{ hostvars[host].awg_preshared_key }}
+{% endif %}
+{% if hostvars[host].awg_allowed_ips is defined and hostvars[host].awg_allowed_ips %}
+AllowedIPs = {{ hostvars[host].awg_allowed_ips }}
+{% else %}
+AllowedIPs = {{ hostvars[host].awg_addresses | map('regex_replace', '/\\d+$', '/32') | join(', ') }}
+{% endif %}
+{% if hostvars[host].awg_endpoint is defined and hostvars[host].awg_endpoint %}
+Endpoint = {{ hostvars[host].awg_endpoint }}:{{ hostvars[host].awg_port | default(awg_port) }}
+{% endif %}
+{% if hostvars[host].awg_persistent_keepalive is defined and hostvars[host].awg_persistent_keepalive %}
+PersistentKeepalive = {{ hostvars[host].awg_persistent_keepalive }}
+{% elif not (hostvars[host].awg_endpoint is defined and hostvars[host].awg_endpoint) %}
+PersistentKeepalive = 25
+{% endif %}
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{% if awg_unmanaged_peers is defined and awg_unmanaged_peers | length > 0 %}
+{% for peer_name in awg_unmanaged_peers %}
+{% set peer = awg_unmanaged_peers[peer_name] %}
+[Peer]
+# {{ peer_name }} (unmanaged)
+PublicKey = {{ peer.public_key }}
+{% if peer.preshared_key is defined and peer.preshared_key %}
+PresharedKey = {{ peer.preshared_key }}
+{% endif %}
+AllowedIPs = {{ peer.allowed_ips }}
+{% if peer.endpoint is defined and peer.endpoint %}
+Endpoint = {{ peer.endpoint }}:{{ peer.port | default(awg_port) }}
+{% endif %}
+{% if peer.persistent_keepalive is defined and peer.persistent_keepalive %}
+PersistentKeepalive = {{ peer.persistent_keepalive }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
