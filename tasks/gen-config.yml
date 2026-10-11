@@ -1,0 +1,12 @@
+- name: Manage AmneziaWG keys
+  tags:
+    - keys
+    - config
+  ansible.builtin.import_tasks:
+    file: keys.yml
+
+- name: Configure AmneziaWG
+  tags:
+    - config
+  ansible.builtin.import_tasks:
+    file: config.yml
