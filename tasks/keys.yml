@@ -25,7 +25,7 @@
 - name: Generate new keypair
   when: >
     not _awg_config_file.stat.exists
-    or awg_private_key is undefined
+    and awg_private_key is undefined
   block:
     - name: Generate new private key
       ansible.builtin.command:
@@ -39,15 +39,16 @@
         awg_private_key: '{{ _awg_generated_private_key.stdout }}'
 
 - name: Derive public key from private key
-  ansible.builtin.shell: |
-    set -euo pipefail
-    echo -n '{{ awg_private_key }}' | awg pubkey
-  args:
-    executable: /bin/bash
-  register: _awg_public_key
-  changed_when: false
-
-- name: Set public key fact for peer sharing
-  when: awg_public_key is not defined
-  ansible.builtin.set_fact:
-    awg_public_key: '{{ _awg_public_key.stdout }}'
+  when: awg_public_key is undefined
+  block:
+    - name: Get public key from private key
+      ansible.builtin.shell: |
+        set -euo pipefail
+        echo -n '{{ awg_private_key }}' | awg pubkey
+      args:
+        executable: /bin/bash
+      register: _awg_public_key
+      changed_when: false
+    - name: Set public key fact for peer sharing
+      ansible.builtin.set_fact:
+        awg_public_key: '{{ _awg_public_key.stdout }}'

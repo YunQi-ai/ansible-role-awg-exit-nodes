@@ -102,14 +102,14 @@ DisableCookies = {{ awg_disable_cookies | default(0) }}
 HeaderProtectionKey = {{ awg_header_protection_key }}
 {% endif %}
 
-{% macro peer(peer)%}
+{% macro peer(peer, peer_name)%}
 [Peer]
 # {{ peer_name }} (unmanaged)
 PublicKey = {{ peer.public_key }}
 {% if peer.preshared_key is defined and peer.preshared_key %}
 PresharedKey = {{ peer.preshared_key }}
 {% endif %}
-AllowedIPs = {{ peer.allowed_ips }}
+AllowedIPs = {{ peer.allowed_ips | join(', ') }}
 {% if peer.endpoint is defined and peer.endpoint %}
 Endpoint = {{ peer.endpoint }}:{{ peer.port | default(awg_port) }}
 {% endif %}
@@ -119,16 +119,17 @@ PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% endmacro %}
 
 # Role's managed peers section
-{% for host in ansible_play_hosts if host != inventory_hostname and (not awg_as_spoke | default(false)) %}
-{% set peer = {
+{% for host in ansible_play_hosts if host != inventory_hostname  %} # and (not (awg_as_spoke | default(false)))
+{% set other_peer = {
+
     'public_key': hostvars[host].awg_public_key,
     'preshared_key': hostvars[host].awg_preshared_key,
-    'allowed_ips': hostvars[host].awg_allowed_ips,
-    'endpoint': hostvars[host].awg_endpoint | default(hostvars[host].ansible_host),
+    'allowed_ips': hostvars[host].awg_allowed_ips | default(["0.0.0.0/0"]),
+    'endpoint': hostvars[host].ansible_host,
     'port': hostvars[host].awg_port | default(awg_port),
     'persistent_keepalive': hostvars[host].awg_persistent_keepalive | default(awg_persistent_keepalive),
 } %}
-{{ peer(peer) }}
+{{ peer(other_peer, host) }}
 {% endfor %}
 # End of managed peers section
 
@@ -136,7 +137,7 @@ PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% if awg_unmanaged_peers is defined and awg_unmanaged_peers | length > 0 %}
 {% for peer_name in awg_unmanaged_peers %}
 {% set peer = awg_unmanaged_peers[peer_name] %}
-{{ peer(peer) }}
+{{ peer(peer, peer_name) }}
 {% endfor %}
 {% endif %}
 # End of unmanaged peers section
