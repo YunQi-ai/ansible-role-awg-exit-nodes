@@ -121,11 +121,11 @@ PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% for host in ansible_play_hosts if host != inventory_hostname and (not awg_as_spoke or (hostvars[host].awg_endpoint | bool | default(false))) %}
 {% set peer = {
     'public_key': hostvars[host].awg_public_key,
-    'preshared_key': hostvars[host].awg_preshared_key | default(''),
-    'allowed_ips': hostvars[host].awg_allowed_ips | default(''),
-    'endpoint': hostvars[host].ansible_host | raise('Endpoint not defined for host ' ~ host),
+    'preshared_key': hostvars[host].awg_preshared_key,
+    'allowed_ips': hostvars[host].awg_allowed_ips,
+    'endpoint': hostvars[host].ansible_host,
     'port': hostvars[host].awg_port | default(awg_port),
-    'persistent_keepalive': hostvars[host].awg_persistent_keepalive | default('')
+    'persistent_keepalive': hostvars[host].awg_persistent_keepalive | default(awg_persistent_keepalive),
 } %}
 {{ peer(peer) }}
 {% endfor %}
