@@ -11,8 +11,6 @@
 - name: Deploy AmneziaWG configuration
   notify:
     - Reload AWG
-  vars:
-    awg_addresses: "{{ [awg_network] }}" # | ansible.utils.ipaddr(0) | ansible.utils.ipaddr('address')
   ansible.builtin.template:
     src: awg.conf.j2
     dest: '{{ awg_remote_directory }}/{{ awg_interface }}.conf'
