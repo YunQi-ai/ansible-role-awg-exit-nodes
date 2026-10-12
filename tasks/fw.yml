@@ -1,6 +1,7 @@
 # code: language=ansible
 
 - name: Configure UFW with NAT and IP Forwarding
+  when: awg_install | default(true) | bool
   vars:
     # The external interface connected to the Internet
     outside_interface: "{{ awg_outside_interface | default(ansible_facts['default_ipv4']['interface']) }}"
@@ -34,21 +35,24 @@
           -A POSTROUTING -s {{ inside_network }} -o {{ outside_interface }} -j MASQUERADE
 
           COMMIT
-
     - name: Ensure SSH is allowed before enabling UFW (Prevent lockout)
-      when: ansible_facts['local'].yunqi.bootstrap.date is undefined and ansible_facts['local'].ait.bootstrap.date is undefined
+      when: ansible_local.yunqi.bootstrap.date is undefined and ansible_local.ait.bootstrap.date is undefined
       loop:
         - port: '22'
           proto: tcp
         - port: '60000:61000'
-          proto: udp
-        - port: "{{ awg_port }}"
           proto: udp
       community.general.ufw:
         rule: allow
         port: "{{ item.port }}"
         proto: "{{ item.proto }}"
 
-    - name: Enable UFW and reload firewall
-      community.general.ufw:
-        state: enabled
+- name: Allow AWG through UFW
+  when: awg_private_key is defined
+  community.general.ufw:
+    rule: allow
+    port: "{{ awg_port }}"
+    proto: udp
+- name: Enable UFW and reload firewall
+  community.general.ufw:
+    state: enabled
