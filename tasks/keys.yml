@@ -42,7 +42,7 @@
     - name: Set private key fact from generated key
       when: awg_private_key is not defined or awg_private_key | length == 0
       ansible.builtin.set_fact:
-        _awg_fact_private_key: '{{ _awg_generated_private_key.stdout }}'
+        awg_private_key: '{{ _awg_generated_private_key.stdout }}'
 
 - name: Derive public key from private key
   ansible.builtin.shell: |
@@ -54,5 +54,6 @@
   changed_when: false
 
 - name: Set public key fact for peer sharing
+  when: awg_public_key is not defined
   ansible.builtin.set_fact:
-    _awg_fact_public_key: '{{ _awg_public_key.stdout }}'
+    awg_public_key: '{{ _awg_public_key.stdout }}'
