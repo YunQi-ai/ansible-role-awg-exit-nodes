@@ -22,6 +22,7 @@
     backup: true
 
 - name: Enable AmneziaWG service
+  when: awg_install | default(true) | bool
   ansible.builtin.systemd:
     name: 'awg-quick@{{ awg_interface }}'
     enabled: true
