@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT-0
 # code: language=yaml
 ---
+awg_install: true
 awg_install_method: "package"
 
 # defaults file for ansible-role-awg-exit-nodes
 awg_auto_reboot: true
 # MTU setting for the AWG exit nodes
 
-awg_mtu: 1420
+# awg_mtu: 1420
 awg_interface: "awg0"
 
 awg_remote_directory: "/etc/amnezia/amneziawg"

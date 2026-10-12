@@ -17,6 +17,7 @@
 - name: Install AmneziaWG
   tags:
     - install
+  when: awg_install | default(true) | bool
   ansible.builtin.import_tasks:
     file: install.yml
 
