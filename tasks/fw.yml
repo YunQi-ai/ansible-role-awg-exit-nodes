@@ -36,6 +36,7 @@
           COMMIT
 
     - name: Ensure SSH is allowed before enabling UFW (Prevent lockout)
+      when: ansible_facts['local'].yunqi.bootstrap.date is undefined and ansible_facts['local'].ait.bootstrap.date is undefined
       loop:
         - port: '22'
           proto: tcp
