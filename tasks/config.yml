@@ -9,6 +9,7 @@
     mode: '0700'
 
 - name: Deploy AmneziaWG configuration
+  when: awg_private_key is defined
   notify:
     - Reload AWG
   ansible.builtin.template:

@@ -9,7 +9,6 @@
     file: prereq.yml
 
 - name: Configure FW
-  when: awg_install | default(true) | bool
   tags:
     - fw
   ansible.builtin.import_tasks:
