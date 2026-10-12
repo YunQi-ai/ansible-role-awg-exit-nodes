@@ -116,14 +116,15 @@ Endpoint = {{ peer.endpoint }}:{{ peer.port | default(awg_port) }}
 {% if peer.persistent_keepalive is defined and peer.persistent_keepalive %}
 PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% endif %}
+{% endmacro %}
 
 # Role's managed peers section
-{% for host in ansible_play_hosts if host != inventory_hostname and (not awg_as_spoke or (hostvars[host].awg_endpoint | bool | default(false))) %}
+{% for host in ansible_play_hosts if host != inventory_hostname and (not awg_as_spoke | default(false)) %}
 {% set peer = {
     'public_key': hostvars[host].awg_public_key,
     'preshared_key': hostvars[host].awg_preshared_key,
     'allowed_ips': hostvars[host].awg_allowed_ips,
-    'endpoint': hostvars[host].ansible_host,
+    'endpoint': hostvars[host].awg_endpoint | default(hostvars[host].ansible_host),
     'port': hostvars[host].awg_port | default(awg_port),
     'persistent_keepalive': hostvars[host].awg_persistent_keepalive | default(awg_persistent_keepalive),
 } %}
@@ -132,7 +133,6 @@ PersistentKeepalive = {{ peer.persistent_keepalive }}
 # End of managed peers section
 
 # Unmanaged peers section
-{% endmacro %}
 {% if awg_unmanaged_peers is defined and awg_unmanaged_peers | length > 0 %}
 {% for peer_name in awg_unmanaged_peers %}
 {% set peer = awg_unmanaged_peers[peer_name] %}
